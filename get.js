@@ -12,24 +12,27 @@ var _getOwnPropertyDescriptor2 = _interopRequireDefault(_getOwnPropertyDescripto
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-exports.default = function set(object, property, value, receiver) {
+exports.default = function get(object, property, receiver) {
+  if (object === null) object = Function.prototype;
   var desc = (0, _getOwnPropertyDescriptor2.default)(object, property);
 
   if (desc === undefined) {
     var parent = (0, _getPrototypeOf2.default)(object);
 
-    if (parent !== null) {
-      set(parent, property, value, receiver);
+    if (parent === null) {
+      return undefined;
+    } else {
+      return get(parent, property, receiver);
     }
-  } else if ("value" in desc && desc.writable) {
-    desc.value = value;
+  } else if ("value" in desc) {
+    return desc.value;
   } else {
-    var setter = desc.set;
+    var getter = desc.get;
 
-    if (setter !== undefined) {
-      setter.call(receiver, value);
+    if (getter === undefined) {
+      return undefined;
     }
-  }
 
-  return value;
+    return getter.call(receiver);
+  }
 };
