@@ -1,331 +1,711 @@
-# v3.2.0
-- Fix a bug in Safari related to overwriting `func.name`
-- Remove built-in browserify configuration (#1653)
-- Varios doc fixes (#1688, #1703, #1704)
-
-# v3.1.1
-- Allow redefining `name` property on wrapped functions.
-
-# v3.1.0
-
-- Added `q.pushAsync` and `q.unshiftAsync`, analagous to `q.push` and `q.unshift`, except they always do not accept a callback, and reject if processing the task errors. (#1659)
-- Promises returned from `q.push` and `q.unshift` when a callback is not passed now resolve even if an error ocurred. (#1659)
-- Fixed a parsing bug in `autoInject` with complicated function bodies (#1663)
-- Added ES6+ configuration for Browserify bundlers (#1653)
-- Various doc fixes (#1664, #1658, #1665, #1652)
-
-# v3.0.1
-
-## Bug fixes
-- Fixed a regression where arrays passed to `queue` and `cargo` would be completely flattened. (#1645)
-- Clarified Async's browser support (#1643)
-
-
-# v3.0.0
-
-The `async`/`await` release!
-
-There are a lot of new features and subtle breaking changes in this major version, but the biggest feature is that most Async methods return a Promise if you omit the callback, meaning you can `await` them from within an `async` function.
-
-```js
-const results = await async.mapLimit(urls, 5, async url => {
-    const resp = await fetch(url)
-    return resp.body
-})
-```
-
-## Breaking Changes
-- Most Async methods return a Promise when the final callback is omitted, making them `await`-able! (#1572)
-- We are now making heavy use of ES2015 features, this means we have dropped out-of-the-box support for Node 4 and earlier, and many old versions of browsers. (#1541, #1553)
-- In `queue`, `priorityQueue`, `cargo` and `cargoQueue`, the "event"-style methods, like `q.drain` and `q.saturated` are now methods that register a callback, rather than properties you assign a callback to.  They are now of the form `q.drain(callback)`.  If you do not pass a callback a Promise will be returned for the next occurrence of the event, making them `await`-able, e.g. `await q.drain()`.  (#1586, #1641)
-- Calling `callback(false)` will cancel an async method, preventing further iteration and callback calls.  This is useful for preventing memory leaks when you break out of an async flow by calling an outer callback. (#1064, #1542)
-- `during` and `doDuring` have been removed, and instead `whilst`, `doWhilst`, `until` and `doUntil` now have asynchronous `test` functions. (#850, #1557)
-- `limits` of less than 1 now cause an error to be thrown in queues and collection methods. (#1249, #1552)
-- `memoize` no longer memoizes errors (#1465, #1466)
-- `applyEach`/`applyEachSeries` have a simpler interface, to make them more easily type-able.  It always returns a function that takes in a single callback argument.  If that callback is omitted, a promise is returned, making it awaitable. (#1228, #1640)
-
-## New Features
-- Async generators are now supported in all the Collection methods. (#1560)
-- Added `cargoQueue`, a queue with both `concurrency` and `payload` size parameters. (#1567)
-- Queue objects returned from `queue` now have a `Symbol.iterator` method, meaning they can be iterated over to inspect the current list of items in the queue. (#1459, #1556)
-- A ESM-flavored `async.mjs` is included in the `async` package.  This is described in the `package.json` `"module"` field, meaning it should be automatically used by Webpack and other compatible bundlers.
-
-## Bug fixes
-- Better handle arbitrary error objects in `asyncify` (#1568, #1569)
-
-## Other
-- Removed Lodash as a dependency (#1283, #1528)
-- Miscellaneous docs fixes (#1393, #1501, #1540, #1543, #1558, #1563, #1564, #1579, #1581)
-- Miscellaneous test fixes (#1538)
-
--------
-
-# v2.6.1
-- Updated lodash to prevent `npm audit` warnings. (#1532, #1533)
-- Made `async-es` more optimized for webpack users (#1517)
-- Fixed a stack overflow with large collections and a synchronous iterator (#1514)
-- Various small fixes/chores (#1505, #1511, #1527, #1530)
-
-# v2.6.0
-- Added missing aliases for many methods.  Previously, you could not (e.g.) `require('async/find')` or use `async.anyLimit`. (#1483)
-- Improved `queue` performance. (#1448, #1454)
-- Add missing sourcemap (#1452, #1453)
-- Various doc updates (#1448, #1471, #1483)
-
-# v2.5.0
-- Added `concatLimit`, the `Limit` equivalent of [`concat`](https://caolan.github.io/async/docs.html#concat) ([#1426](https://github.com/caolan/async/issues/1426), [#1430](https://github.com/caolan/async/pull/1430))
-- `concat` improvements: it now preserves order, handles falsy values and the `iteratee` callback takes a variable number of arguments ([#1437](https://github.com/caolan/async/issues/1437), [#1436](https://github.com/caolan/async/pull/1436))
-- Fixed an issue in `queue`  where there was a size discrepancy between `workersList().length` and `running()` ([#1428](https://github.com/caolan/async/issues/1428), [#1429](https://github.com/caolan/async/pull/1429))
-- Various doc fixes ([#1422](https://github.com/caolan/async/issues/1422), [#1424](https://github.com/caolan/async/pull/1424))
-
-# v2.4.1
-- Fixed a bug preventing functions wrapped  with `timeout()` from being re-used. ([#1418](https://github.com/caolan/async/issues/1418), [#1419](https://github.com/caolan/async/issues/1419))
-
-# v2.4.0
-- Added `tryEach`, for running async functions in parallel, where you only expect one to succeed. ([#1365](https://github.com/caolan/async/issues/1365), [#687](https://github.com/caolan/async/issues/687))
-- Improved performance, most notably in `parallel` and `waterfall` ([#1395](https://github.com/caolan/async/issues/1395))
-- Added `queue.remove()`, for removing items in a `queue` ([#1397](https://github.com/caolan/async/issues/1397), [#1391](https://github.com/caolan/async/issues/1391))
-- Fixed using `eval`, preventing Async from running in pages with Content Security Policy ([#1404](https://github.com/caolan/async/issues/1404), [#1403](https://github.com/caolan/async/issues/1403))
-- Fixed errors thrown in an `asyncify`ed function's callback being caught by the underlying Promise ([#1408](https://github.com/caolan/async/issues/1408))
-- Fixed timing of `queue.empty()` ([#1367](https://github.com/caolan/async/issues/1367))
-- Various doc fixes ([#1314](https://github.com/caolan/async/issues/1314), [#1394](https://github.com/caolan/async/issues/1394), [#1412](https://github.com/caolan/async/issues/1412))
-
-# v2.3.0
-- Added support for ES2017 `async` functions.  Wherever you can pass a Node-style/CPS function that uses a callback, you can also pass an `async` function.  Previously, you had to wrap `async` functions with `asyncify`.  The caveat is that it will only work if `async` functions are supported natively in your environment, transpiled implementations can't be detected.  ([#1386](https://github.com/caolan/async/issues/1386), [#1390](https://github.com/caolan/async/issues/1390))
-- Small doc fix ([#1392](https://github.com/caolan/async/issues/1392))
-
-# v2.2.0
-- Added `groupBy`, and the `Series`/`Limit` equivalents, analogous to [`_.groupBy`](http://lodash.com/docs#groupBy) ([#1364](https://github.com/caolan/async/issues/1364))
-- Fixed `transform` bug when `callback` was not passed ([#1381](https://github.com/caolan/async/issues/1381))
-- Added note about `reflect` to `parallel` docs ([#1385](https://github.com/caolan/async/issues/1385))
-
-# v2.1.5
-- Fix `auto` bug when function names collided with Array.prototype ([#1358](https://github.com/caolan/async/issues/1358))
-- Improve some error messages ([#1349](https://github.com/caolan/async/issues/1349))
-- Avoid stack overflow case in queue
-- Fixed an issue in `some`, `every` and `find` where processing would continue after the result was determined.
-- Cleanup implementations of `some`, `every` and `find`
-
-# v2.1.3
-- Make bundle size smaller
-- Create optimized hotpath for `filter` in array case.
-
-# v2.1.2
-- Fixed a stackoverflow bug with `detect`, `some`, `every` on large inputs ([#1293](https://github.com/caolan/async/issues/1293)).
-
-# v2.1.0
-
-- `retry` and `retryable` now support an optional `errorFilter` function that determines if the `task` should retry on the error ([#1256](https://github.com/caolan/async/issues/1256), [#1261](https://github.com/caolan/async/issues/1261))
-- Optimized array iteration in `race`, `cargo`, `queue`, and `priorityQueue` ([#1253](https://github.com/caolan/async/issues/1253))
-- Added alias documentation to doc site ([#1251](https://github.com/caolan/async/issues/1251), [#1254](https://github.com/caolan/async/issues/1254))
-- Added [BootStrap scrollspy](http://getbootstrap.com/javascript/#scrollspy) to docs to highlight in the sidebar the current method being viewed  ([#1289](https://github.com/caolan/async/issues/1289), [#1300](https://github.com/caolan/async/issues/1300))
-- Various minor doc fixes ([#1263](https://github.com/caolan/async/issues/1263), [#1264](https://github.com/caolan/async/issues/1264), [#1271](https://github.com/caolan/async/issues/1271), [#1278](https://github.com/caolan/async/issues/1278), [#1280](https://github.com/caolan/async/issues/1280), [#1282](https://github.com/caolan/async/issues/1282), [#1302](https://github.com/caolan/async/issues/1302))
-
-# v2.0.1
-
-- Significantly optimized all iteration based collection methods such as `each`, `map`, `filter`, etc ([#1245](https://github.com/caolan/async/issues/1245), [#1246](https://github.com/caolan/async/issues/1246), [#1247](https://github.com/caolan/async/issues/1247)).
-
-# v2.0.0
-
-Lots of changes here!
-
-First and foremost, we have a slick new [site for docs](https://caolan.github.io/async/). Special thanks to [**@hargasinski**](https://github.com/hargasinski) for his work converting our old docs to `jsdoc` format and implementing the new website. Also huge ups to [**@ivanseidel**](https://github.com/ivanseidel) for designing our new logo. It was a long process for both of these tasks, but I think these changes turned out extraordinary well.
-
-The biggest feature is modularization. You can now `require("async/series")` to only require the `series` function. Every Async library function is available this way. You still can `require("async")` to require the entire library, like you could do before.
-
-We also provide Async as a collection of ES2015 modules. You can now `import {each} from 'async-es'` or `import waterfall from 'async-es/waterfall'`. If you are using only a few Async functions, and are using a ES bundler such as Rollup, this can significantly lower your build size.
-
-Major thanks to [**@Kikobeats**](github.com/Kikobeats), [**@aearly**](github.com/aearly) and [**@megawac**](github.com/megawac) for doing the majority of the modularization work, as well as [**@jdalton**](github.com/jdalton) and [**@Rich-Harris**](github.com/Rich-Harris) for advisory work on the general modularization strategy.
-
-Another one of the general themes of the 2.0 release is standardization of what an "async" function is. We are now more strictly following the node-style continuation passing style. That is, an async function is a function that:
-
-1. Takes a variable number of arguments
-2. The last argument is always a callback
-3. The callback can accept any number of arguments
-4. The first argument passed to the callback will be treated as an error result, if the argument is truthy
-5. Any number of result arguments can be passed after the "error" argument
-6. The callback is called once and exactly once, either on the same tick or later tick of the JavaScript event loop.
-
-There were several cases where Async accepted some functions that did not strictly have these properties, most notably `auto`, `every`, `some`, `filter`, `reject` and `detect`.
-
-Another theme is performance. We have eliminated internal deferrals in all cases where they make sense. For example, in `waterfall` and `auto`, there was a `setImmediate` between each task -- these deferrals have been removed. A `setImmediate` call can add up to 1ms of delay. This might not seem like a lot, but it can add up if you are using many Async functions in the course of processing a HTTP request, for example. Nearly all asynchronous functions that do I/O already have some sort of deferral built in, so the extra deferral is unnecessary. The trade-off of this change is removing our built-in stack-overflow defense. Many synchronous callback calls in series can quickly overflow the JS call stack. If you do have a function that is sometimes synchronous (calling its callback on the same tick), and are running into stack overflows, wrap it with `async.ensureAsync()`.
-
-Another big performance win has been re-implementing `queue`, `cargo`, and `priorityQueue` with [doubly linked lists](https://en.wikipedia.org/wiki/Doubly_linked_list) instead of arrays. This has lead to queues being an order of [magnitude faster on large sets of tasks](https://github.com/caolan/async/pull/1205).
-
-## New Features
-
-- Async is now modularized. Individual functions can be `require()`d from the main package. (`require('async/auto')`) ([#984](https://github.com/caolan/async/issues/984), [#996](https://github.com/caolan/async/issues/996))
-- Async is also available as a collection of ES2015 modules in the new `async-es` package. (`import {forEachSeries} from 'async-es'`) ([#984](https://github.com/caolan/async/issues/984), [#996](https://github.com/caolan/async/issues/996))
-- Added `race`, analogous to `Promise.race()`. It will run an array of async tasks in parallel and will call its callback with the result of the first task to respond. ([#568](https://github.com/caolan/async/issues/568), [#1038](https://github.com/caolan/async/issues/1038))
-- Collection methods now accept ES2015 iterators.  Maps, Sets, and anything that implements the iterator spec can now be passed directly to `each`, `map`, `parallel`, etc.. ([#579](https://github.com/caolan/async/issues/579), [#839](https://github.com/caolan/async/issues/839), [#1074](https://github.com/caolan/async/issues/1074))
-- Added `mapValues`, for mapping over the properties of an object and returning an object with the same keys. ([#1157](https://github.com/caolan/async/issues/1157), [#1177](https://github.com/caolan/async/issues/1177))
-- Added `timeout`, a wrapper for an async function that will make the task time-out after the specified time. ([#1007](https://github.com/caolan/async/issues/1007), [#1027](https://github.com/caolan/async/issues/1027))
-- Added `reflect` and `reflectAll`, analagous to [`Promise.reflect()`](http://bluebirdjs.com/docs/api/reflect.html), a wrapper for async tasks that always succeeds, by gathering results and errors into an object.  ([#942](https://github.com/caolan/async/issues/942), [#1012](https://github.com/caolan/async/issues/1012), [#1095](https://github.com/caolan/async/issues/1095))
-- `constant` supports dynamic arguments -- it will now always use its last argument as the callback. ([#1016](https://github.com/caolan/async/issues/1016), [#1052](https://github.com/caolan/async/issues/1052))
-- `setImmediate` and `nextTick` now support arguments to partially apply to the deferred function, like the node-native versions do. ([#940](https://github.com/caolan/async/issues/940), [#1053](https://github.com/caolan/async/issues/1053))
-- `auto` now supports resolving cyclic dependencies using [Kahn's algorithm](https://en.wikipedia.org/wiki/Topological_sorting#Kahn.27s_algorithm) ([#1140](https://github.com/caolan/async/issues/1140)).
-- Added `autoInject`, a relative of `auto` that automatically spreads a task's dependencies as arguments to the task function. ([#608](https://github.com/caolan/async/issues/608), [#1055](https://github.com/caolan/async/issues/1055), [#1099](https://github.com/caolan/async/issues/1099), [#1100](https://github.com/caolan/async/issues/1100))
-- You can now limit the concurrency of `auto` tasks. ([#635](https://github.com/caolan/async/issues/635), [#637](https://github.com/caolan/async/issues/637))
-- Added `retryable`, a relative of `retry` that wraps an async function, making it retry when called. ([#1058](https://github.com/caolan/async/issues/1058))
-- `retry` now supports specifying a function that determines the next time interval, useful for exponential backoff, logging and other retry strategies. ([#1161](https://github.com/caolan/async/issues/1161))
-- `retry` will now pass all of the arguments the task function was resolved with to the callback ([#1231](https://github.com/caolan/async/issues/1231)).
-- Added `q.unsaturated` -- callback called when a `queue`'s number of running workers falls below a threshold. ([#868](https://github.com/caolan/async/issues/868), [#1030](https://github.com/caolan/async/issues/1030), [#1033](https://github.com/caolan/async/issues/1033), [#1034](https://github.com/caolan/async/issues/1034))
-- Added `q.error` -- a callback called whenever a `queue` task calls its callback with an error. ([#1170](https://github.com/caolan/async/issues/1170))
-- `applyEach` and `applyEachSeries` now pass results to the final callback. ([#1088](https://github.com/caolan/async/issues/1088))
-
-## Breaking changes
-
-- Calling a callback more than once is considered an error, and an error will be thrown. This had an explicit breaking change in `waterfall`. If you were relying on this behavior, you should more accurately represent your control flow as an event emitter or stream. ([#814](https://github.com/caolan/async/issues/814), [#815](https://github.com/caolan/async/issues/815), [#1048](https://github.com/caolan/async/issues/1048), [#1050](https://github.com/caolan/async/issues/1050))
-- `auto` task functions now always take the callback as the last argument. If a task has dependencies, the `results` object will be passed as the first argument. To migrate old task functions, wrap them with [`_.flip`](https://lodash.com/docs#flip) ([#1036](https://github.com/caolan/async/issues/1036), [#1042](https://github.com/caolan/async/issues/1042))
-- Internal `setImmediate` calls have been refactored away. This may make existing flows vulnerable to stack overflows if you use many synchronous functions in series. Use `ensureAsync` to work around this. ([#696](https://github.com/caolan/async/issues/696), [#704](https://github.com/caolan/async/issues/704), [#1049](https://github.com/caolan/async/issues/1049), [#1050](https://github.com/caolan/async/issues/1050))
-- `map` used to return an object when iterating over an object.  `map` now always returns an array, like in other libraries.  The previous object behavior has been split out into `mapValues`. ([#1157](https://github.com/caolan/async/issues/1157), [#1177](https://github.com/caolan/async/issues/1177))
-- `filter`, `reject`, `some`, `every`, `detect` and their families like `{METHOD}Series` and `{METHOD}Limit` now expect an error as the first callback argument, rather than just a simple boolean. Pass `null` as the first argument, or use `fs.access` instead of `fs.exists`. ([#118](https://github.com/caolan/async/issues/118), [#774](https://github.com/caolan/async/issues/774), [#1028](https://github.com/caolan/async/issues/1028), [#1041](https://github.com/caolan/async/issues/1041))
-- `{METHOD}` and `{METHOD}Series` are now implemented in terms of `{METHOD}Limit`. This is a major internal simplification, and is not expected to cause many problems, but it does subtly affect how functions execute internally. ([#778](https://github.com/caolan/async/issues/778), [#847](https://github.com/caolan/async/issues/847))
-- `retry`'s callback is now optional. Previously, omitting the callback would partially apply the function, meaning it could be passed directly as a task to `series` or `auto`. The partially applied "control-flow" behavior has been separated out into `retryable`. ([#1054](https://github.com/caolan/async/issues/1054), [#1058](https://github.com/caolan/async/issues/1058))
-- The test function for `whilst`, `until`, and `during` used to be passed non-error args from the iteratee function's callback, but this led to weirdness where the first call of the test function would be passed no args. We have made it so the test function is never passed extra arguments, and only the `doWhilst`, `doUntil`, and `doDuring` functions pass iteratee callback arguments to the test function ([#1217](https://github.com/caolan/async/issues/1217), [#1224](https://github.com/caolan/async/issues/1224))
-- The `q.tasks` array has been renamed `q._tasks` and is now implemented as a doubly linked list (DLL). Any code that used to interact with this array will need to be updated to either use the provided helpers or support DLLs ([#1205](https://github.com/caolan/async/issues/1205)).
-- The timing of the `q.saturated()` callback in a `queue` has been modified to better reflect when tasks pushed to the queue will start queueing. ([#724](https://github.com/caolan/async/issues/724), [#1078](https://github.com/caolan/async/issues/1078))
-- Removed `iterator` method in favour of [ES2015 iterator protocol](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Iterators_and_Generators ) which natively supports arrays ([#1237](https://github.com/caolan/async/issues/1237))
-- Dropped support for Component, Jam, SPM, and Volo ([#1175](https://github.com/caolan/async/issues/1175), #[#176](https://github.com/caolan/async/issues/176))
-
-## Bug Fixes
-
-- Improved handling of no dependency cases in `auto` & `autoInject` ([#1147](https://github.com/caolan/async/issues/1147)).
-- Fixed a bug where the callback generated by `asyncify` with  `Promises` could resolve twice ([#1197](https://github.com/caolan/async/issues/1197)).
-- Fixed several documented optional callbacks not actually being optional ([#1223](https://github.com/caolan/async/issues/1223)).
-
-## Other
-
-- Added `someSeries` and `everySeries` for symmetry, as well as a complete set of `any`/`anyLimit`/`anySeries` and `all`/`/allLmit`/`allSeries` aliases.
-- Added `find` as an alias for `detect. (as well as `findLimit` and `findSeries`).
-- Various doc fixes ([#1005](https://github.com/caolan/async/issues/1005), [#1008](https://github.com/caolan/async/issues/1008), [#1010](https://github.com/caolan/async/issues/1010), [#1015](https://github.com/caolan/async/issues/1015), [#1021](https://github.com/caolan/async/issues/1021), [#1037](https://github.com/caolan/async/issues/1037), [#1039](https://github.com/caolan/async/issues/1039), [#1051](https://github.com/caolan/async/issues/1051), [#1102](https://github.com/caolan/async/issues/1102), [#1107](https://github.com/caolan/async/issues/1107), [#1121](https://github.com/caolan/async/issues/1121), [#1123](https://github.com/caolan/async/issues/1123), [#1129](https://github.com/caolan/async/issues/1129), [#1135](https://github.com/caolan/async/issues/1135), [#1138](https://github.com/caolan/async/issues/1138), [#1141](https://github.com/caolan/async/issues/1141), [#1153](https://github.com/caolan/async/issues/1153), [#1216](https://github.com/caolan/async/issues/1216), [#1217](https://github.com/caolan/async/issues/1217), [#1232](https://github.com/caolan/async/issues/1232), [#1233](https://github.com/caolan/async/issues/1233), [#1236](https://github.com/caolan/async/issues/1236), [#1238](https://github.com/caolan/async/issues/1238))
-
-Thank you [**@aearly**](github.com/aearly) and [**@megawac**](github.com/megawac) for taking the lead on version 2 of async.
-
-------------------------------------------
-
-# v1.5.2
-- Allow using `"constructor"` as an argument in `memoize` ([#998](https://github.com/caolan/async/issues/998))
-- Give a better error messsage when `auto` dependency checking fails ([#994](https://github.com/caolan/async/issues/994))
-- Various doc updates ([#936](https://github.com/caolan/async/issues/936), [#956](https://github.com/caolan/async/issues/956), [#979](https://github.com/caolan/async/issues/979), [#1002](https://github.com/caolan/async/issues/1002))
-
-# v1.5.1
-- Fix issue with `pause` in `queue` with concurrency enabled ([#946](https://github.com/caolan/async/issues/946))
-- `while` and `until` now pass the final result to callback ([#963](https://github.com/caolan/async/issues/963))
-- `auto` will properly handle concurrency when there is no callback ([#966](https://github.com/caolan/async/issues/966))
-- `auto` will no. properly stop execution when an error occurs ([#988](https://github.com/caolan/async/issues/988), [#993](https://github.com/caolan/async/issues/993))
-- Various doc fixes ([#971](https://github.com/caolan/async/issues/971), [#980](https://github.com/caolan/async/issues/980))
-
-# v1.5.0
-
-- Added `transform`, analogous to [`_.transform`](http://lodash.com/docs#transform) ([#892](https://github.com/caolan/async/issues/892))
-- `map` now returns an object when an object is passed in, rather than array with non-numeric keys. `map` will begin always returning an array with numeric indexes in the next major release. ([#873](https://github.com/caolan/async/issues/873))
-- `auto` now accepts an optional `concurrency` argument to limit the number o. running tasks ([#637](https://github.com/caolan/async/issues/637))
-- Added `queue#workersList()`, to retrieve the lis. of currently running tasks. ([#891](https://github.com/caolan/async/issues/891))
-- Various code simplifications ([#896](https://github.com/caolan/async/issues/896), [#904](https://github.com/caolan/async/issues/904))
-- Various doc fixes :scroll: ([#890](https://github.com/caolan/async/issues/890), [#894](https://github.com/caolan/async/issues/894), [#903](https://github.com/caolan/async/issues/903), [#905](https://github.com/caolan/async/issues/905), [#912](https://github.com/caolan/async/issues/912))
-
-# v1.4.2
-
-- Ensure coverage files don't get published on npm ([#879](https://github.com/caolan/async/issues/879))
-
-# v1.4.1
-
-- Add in overlooked `detectLimit` method ([#866](https://github.com/caolan/async/issues/866))
-- Removed unnecessary files from npm releases ([#861](https://github.com/caolan/async/issues/861))
-- Removed usage of a reserved word to prevent :boom: in older environments ([#870](https://github.com/caolan/async/issues/870))
-
-# v1.4.0
-
-- `asyncify` now supports promises ([#840](https://github.com/caolan/async/issues/840))
-- Added `Limit` versions of `filter` and `reject` ([#836](https://github.com/caolan/async/issues/836))
-- Add `Limit` versions of `detect`, `some` and `every` ([#828](https://github.com/caolan/async/issues/828), [#829](https://github.com/caolan/async/issues/829))
-- `some`, `every` and `detect` now short circuit early ([#828](https://github.com/caolan/async/issues/828), [#829](https://github.com/caolan/async/issues/829))
-- Improve detection of the global object ([#804](https://github.com/caolan/async/issues/804)), enabling use in WebWorkers
-- `whilst` now called with arguments from iterator ([#823](https://github.com/caolan/async/issues/823))
-- `during` now gets called with arguments from iterator ([#824](https://github.com/caolan/async/issues/824))
-- Code simplifications and optimizations aplenty ([diff](https://github.com/caolan/async/compare/v1.3.0...v1.4.0))
-
-
-# v1.3.0
-
-New Features:
-- Added `constant`
-- Added `asyncify`/`wrapSync` for making sync functions work with callbacks. ([#671](https://github.com/caolan/async/issues/671), [#806](https://github.com/caolan/async/issues/806))
-- Added `during` and `doDuring`, which are like `whilst` with an async truth test. ([#800](https://github.com/caolan/async/issues/800))
-- `retry` now accepts an `interval` parameter to specify a delay between retries. ([#793](https://github.com/caolan/async/issues/793))
-- `async` should work better in Web Workers due to better `root` detection ([#804](https://github.com/caolan/async/issues/804))
-- Callbacks are now optional in `whilst`, `doWhilst`, `until`, and `doUntil` ([#642](https://github.com/caolan/async/issues/642))
-- Various internal updates ([#786](https://github.com/caolan/async/issues/786), [#801](https://github.com/caolan/async/issues/801), [#802](https://github.com/caolan/async/issues/802), [#803](https://github.com/caolan/async/issues/803))
-- Various doc fixes ([#790](https://github.com/caolan/async/issues/790), [#794](https://github.com/caolan/async/issues/794))
-
-Bug Fixes:
-- `cargo` now exposes the `payload` size, and `cargo.payload` can be changed on the fly after the `cargo` is created. ([#740](https://github.com/caolan/async/issues/740), [#744](https://github.com/caolan/async/issues/744), [#783](https://github.com/caolan/async/issues/783))
-
-
-# v1.2.1
-
-Bug Fix:
-
-- Small regression with synchronous iterator behavior in `eachSeries` with a 1-element array. Before 1.1.0, `eachSeries`'s callback was called on the same tick, which this patch restores. In 2.0.0, it will be called on the next tick. ([#782](https://github.com/caolan/async/issues/782))
-
-
-# v1.2.0
-
-New Features:
-
-- Added `timesLimit` ([#743](https://github.com/caolan/async/issues/743))
-- `concurrency` can be changed after initialization in `queue` by setting `q.concurrency`. The new concurrency will be reflected the next time a task is processed. ([#747](https://github.com/caolan/async/issues/747), [#772](https://github.com/caolan/async/issues/772))
-
-Bug Fixes:
-
-- Fixed a regression in `each` and family with empty arrays that have additional properties. ([#775](https://github.com/caolan/async/issues/775), [#777](https://github.com/caolan/async/issues/777))
-
-
-# v1.1.1
-
-Bug Fix:
-
-- Small regression with synchronous iterator behavior in `eachSeries` with a 1-element array. Before 1.1.0, `eachSeries`'s callback was called on the same tick, which this patch restores. In 2.0.0, it will be called on the next tick. ([#782](https://github.com/caolan/async/issues/782))
-
-
-# v1.1.0
-
-New Features:
-
-- `cargo` now supports all of the same methods and event callbacks as `queue`.
-- Added `ensureAsync` - A wrapper that ensures an async function calls its callback on a later tick. ([#769](https://github.com/caolan/async/issues/769))
-- Optimized `map`, `eachOf`, and `waterfall` families of functions
-- Passing a `null` or `undefined` array to `map`, `each`, `parallel` and families will be treated as an empty array ([#667](https://github.com/caolan/async/issues/667)).
-- The callback is now optional for the composed results of `compose` and `seq`. ([#618](https://github.com/caolan/async/issues/618))
-- Reduced file size by 4kb, (minified version by 1kb)
-- Added code coverage through `nyc` and `coveralls` ([#768](https://github.com/caolan/async/issues/768))
-
-Bug Fixes:
-
-- `forever` will no longer stack overflow with a synchronous iterator ([#622](https://github.com/caolan/async/issues/622))
-- `eachLimit` and other limit functions will stop iterating once an error occurs ([#754](https://github.com/caolan/async/issues/754))
-- Always pass `null` in callbacks when there is no error ([#439](https://github.com/caolan/async/issues/439))
-- Ensure proper conditions when calling `drain()` after pushing an empty data set to a queue ([#668](https://github.com/caolan/async/issues/668))
-- `each` and family will properly handle an empty array ([#578](https://github.com/caolan/async/issues/578))
-- `eachSeries` and family will finish if the underlying array is modified during execution ([#557](https://github.com/caolan/async/issues/557))
-- `queue` will throw if a non-function is passed to `q.push()` ([#593](https://github.com/caolan/async/issues/593))
-- Doc fixes ([#629](https://github.com/caolan/async/issues/629), [#766](https://github.com/caolan/async/issues/766))
-
-
-# v1.0.0
-
-No known breaking changes, we are simply complying with semver from here on out.
-
-Changes:
-
-- Start using a changelog!
-- Add `forEachOf` for iterating over Objects (or to iterate Arrays with indexes available) ([#168](https://github.com/caolan/async/issues/168) [#704](https://github.com/caolan/async/issues/704) [#321](https://github.com/caolan/async/issues/321))
-- Detect deadlocks in `auto` ([#663](https://github.com/caolan/async/issues/663))
-- Better support for require.js ([#527](https://github.com/caolan/async/issues/527))
-- Throw if queue created with concurrency `0` ([#714](https://github.com/caolan/async/issues/714))
-- Fix unneeded iteration in `queue.resume()` ([#758](https://github.com/caolan/async/issues/758))
-- Guard against timer mocking overriding `setImmediate` ([#609](https://github.com/caolan/async/issues/609) [#611](https://github.com/caolan/async/issues/611))
-- Miscellaneous doc fixes ([#542](https://github.com/caolan/async/issues/542) [#596](https://github.com/caolan/async/issues/596) [#615](https://github.com/caolan/async/issues/615) [#628](https://github.com/caolan/async/issues/628) [#631](https://github.com/caolan/async/issues/631) [#690](https://github.com/caolan/async/issues/690) [#729](https://github.com/caolan/async/issues/729))
-- Use single noop function internally ([#546](https://github.com/caolan/async/issues/546))
-- Optimize internal `_each`, `_map` and `_keys` functions.
+## Changelog
+##### 2.6.12 [LEGACY] - 2020.11.26
+- Added code points / code units explicit feature detection in `String#at` for preventing breakage code which use obsolete `String#at` proposal polyfill
+- Added `OPEN_SOURCE_CONTRIBUTOR` detection in `postinstall`
+- Added Drone CI detection in `postinstall`
+
+##### 2.6.11 [LEGACY] - 2019.12.09
+- Returned usage of `node -e` in `postinstall` scripts for better cross-platform compatibility, [#582](https://github.com/zloirock/core-js/issues/582)
+- Improved CI detection in the `postinstall` script, [#707](https://github.com/zloirock/core-js/issues/707)
+
+##### 2.6.10 [LEGACY] - 2019.10.13
+- Show similar `postinstall` messages only once per `npm i`, [#597](https://github.com/zloirock/core-js/issues/597)
+
+##### 2.6.9 [LEGACY] - 2019.05.27
+- Some fixes and improvements of the `postinstall` script like support `npm` color config ([#556](https://github.com/zloirock/core-js/issues/556)) or adding support of `ADBLOCK` env variable
+
+##### 2.6.8 [LEGACY] - 2019.05.22
+- Added a workaround of a strange `npx` bug on `postinstall`, [#551](https://github.com/zloirock/core-js/issues/551)
+
+##### 2.6.7 [LEGACY] - 2019.05.21
+- Added one more workaround of alternative not completely correct `Symbol` polyfills, [#550](https://github.com/zloirock/core-js/issues/550), [#554](https://github.com/zloirock/core-js/issues/554)
+
+##### 2.6.6 [LEGACY] - 2019.05.20
+- Fixed IE8- non-enumerable properties support in `Object.{ assign, entries, values }`, [#541](https://github.com/zloirock/core-js/issues/541)
+- Fixed support of primitives in `Object.getOwnPropertySymbols` in Chrome 38 / 39, [#539](https://github.com/zloirock/core-js/issues/539)
+- Show a message on `postinstall`
+
+##### 2.6.5 - 2019.02.15
+- Fixed buggy `String#padStart` and `String#padEnd` mobile Safari implementations, [#414](https://github.com/zloirock/core-js/issues/414).
+
+##### 2.6.4 - 2019.02.07
+- Added a workaround against crushing an old IE11.0.9600.16384 build, [#485](https://github.com/zloirock/core-js/issues/485).
+
+##### 2.6.3 - 2019.01.22
+- Added a workaround for `babel-minify` bug, [#479](https://github.com/zloirock/core-js/issues/479)
+
+##### 2.6.2 - 2019.01.10
+- Fixed handling of `$` in `String#replace`, [#471](https://github.com/zloirock/core-js/issues/471)
+
+##### 2.6.1 - 2018.12.18
+- Fixed an issue with minified version, [#463](https://github.com/zloirock/core-js/issues/463)
+
+##### 2.6.0 - 2018.12.05
+- Add direct .exec calling to `RegExp#{@@replace, @@split, @@match, @@search}`. Also, added fixes for `RegExp#exec` method. [#411](https://github.com/zloirock/core-js/issues/411), [#428](https://github.com/zloirock/core-js/issues/428), [#434](https://github.com/zloirock/core-js/issues/434), [#435](https://github.com/zloirock/core-js/issues/435), [#453](https://github.com/zloirock/core-js/issues/453), [#458](https://github.com/zloirock/core-js/issues/458), thanks [**@nicolo-ribaudo**](https://github.com/nicolo-ribaudo).
+
+##### 2.5.7 - 2018.05.26
+- Get rid of reserved variable name `final`, related [#400](https://github.com/zloirock/core-js/issues/400)
+
+##### 2.5.6 - 2018.05.07
+- Forced replace native `Promise` in V8 6.6 (Node 10 and Chrome 66) because of [a bug with resolving custom thenables](https://bugs.chromium.org/p/chromium/issues/detail?id=830565)
+- Added a workaround for usage buggy native LG WebOS 2 `Promise` in microtask implementation, [#396](https://github.com/zloirock/core-js/issues/396)
+- Added modern version internal debugging information about used versions
+
+##### 2.5.5 - 2018.04.08
+- Fix some edge cases of `Reflect.set`, [#392](https://github.com/zloirock/core-js/issues/392) and [#393](https://github.com/zloirock/core-js/issues/393)
+
+##### 2.5.4 - 2018.03.27
+- Fixed one case of deoptimization built-in iterators in V8, related [#377](https://github.com/zloirock/core-js/issues/377)
+- Fixed some cases of iterators feature detection, [#368](https://github.com/zloirock/core-js/issues/368)
+- Fixed manually entered NodeJS domains issue in `Promise`, [#367](https://github.com/zloirock/core-js/issues/367)
+- Fixed `Number.{parseInt, parseFloat}` entry points
+- Fixed `__(define|lookup)[GS]etter__` import in the `library` version
+
+##### 2.5.3 - 2017.12.12
+- Fixed calling `onunhandledrejectionhandler` multiple times for one `Promise` chain, [#318](https://github.com/zloirock/core-js/issues/318)
+- Forced replacement of `String#{padStart, padEnd}` in Safari 10 because of [a bug](https://bugs.webkit.org/show_bug.cgi?id=161944), [#280](https://github.com/zloirock/core-js/issues/280)
+- Fixed `Array#@@iterator` in a very rare version of `WebKit`, [#236](https://github.com/zloirock/core-js/issues/236) and [#237](https://github.com/zloirock/core-js/issues/237)
+- One more [#345](https://github.com/zloirock/core-js/issues/345)-related fix
+
+##### 2.5.2 - 2017.12.09
+- `MutationObserver` no longer used for microtask implementation in iOS Safari because of bug with scrolling, [#339](https://github.com/zloirock/core-js/issues/339)
+- Fixed `JSON.stringify(undefined, replacer)` case in the wrapper from the `Symbol` polyfill, [#345](https://github.com/zloirock/core-js/issues/345)
+- `Array()` calls changed to `new Array()` for V8 optimisation
+
+##### 2.5.1 - 2017.09.01
+- Updated `Promise#finally` per [tc39/proposal-promise-finally#37](https://github.com/tc39/proposal-promise-finally/issues/37)
+- Optimized usage of some internal helpers for reducing size of `shim` version
+- Fixed some entry points for virtual methods
+
+##### 2.5.0 - 2017.08.05
+- Added `Promise#finally` [stage 3 proposal](https://github.com/tc39/proposal-promise-finally), [#225](https://github.com/zloirock/core-js/issues/225)
+- Added `Promise.try` [stage 1 proposal](https://github.com/tc39/proposal-promise-try)
+- Added `Array#flatten` and `Array#flatMap` [stage 1 proposal](https://tc39.github.io/proposal-flatMap)
+- Added `.of` and `.from` methods on collection constructors [stage 1 proposal](https://github.com/tc39/proposal-setmap-offrom):
+  - `Map.of`
+  - `Set.of`
+  - `WeakSet.of`
+  - `WeakMap.of`
+  - `Map.from`
+  - `Set.from`
+  - `WeakSet.from`
+  - `WeakMap.from`
+- Added `Math` extensions [stage 1 proposal](https://github.com/rwaldron/proposal-math-extensions), [#226](https://github.com/zloirock/core-js/issues/226):
+  - `Math.clamp`
+  - `Math.DEG_PER_RAD`
+  - `Math.degrees`
+  - `Math.fscale`
+  - `Math.RAD_PER_DEG`
+  - `Math.radians`
+  - `Math.scale`
+- Added `Math.signbit` [stage 1 proposal](http://jfbastien.github.io/papers/Math.signbit.html)
+- Updated `global` [stage 3 proposal](https://github.com/tc39/proposal-global) - added `global` global object, `System.global` deprecated
+- Updated `Object.getOwnPropertyDescriptors` to the [final version](https://tc39.github.io/ecma262/2017/#sec-object.getownpropertydescriptors) - it should not create properties if descriptors are `undefined`
+- Updated the list of iterable DOM collections, [#249](https://github.com/zloirock/core-js/issues/249), added:
+  - `CSSStyleDeclaration#@@iterator`
+  - `CSSValueList#@@iterator`
+  - `ClientRectList#@@iterator`
+  - `DOMRectList#@@iterator`
+  - `DOMStringList#@@iterator`
+  - `DataTransferItemList#@@iterator`
+  - `FileList#@@iterator`
+  - `HTMLAllCollection#@@iterator`
+  - `HTMLCollection#@@iterator`
+  - `HTMLFormElement#@@iterator`
+  - `HTMLSelectElement#@@iterator`
+  - `MimeTypeArray#@@iterator`
+  - `NamedNodeMap#@@iterator`
+  - `PaintRequestList#@@iterator`
+  - `Plugin#@@iterator`
+  - `PluginArray#@@iterator`
+  - `SVGLengthList#@@iterator`
+  - `SVGNumberList#@@iterator`
+  - `SVGPathSegList#@@iterator`
+  - `SVGPointList#@@iterator`
+  - `SVGStringList#@@iterator`
+  - `SVGTransformList#@@iterator`
+  - `SourceBufferList#@@iterator`
+  - `TextTrackCueList#@@iterator`
+  - `TextTrackList#@@iterator`
+  - `TouchList#@@iterator`
+- Updated stages of proposals:
+  - [`Object.getOwnPropertyDescriptors`](https://github.com/tc39/proposal-object-getownpropertydescriptors) to [stage 4 (ES2017)](https://tc39.github.io/ecma262/2017/#sec-object.getownpropertydescriptors)
+  - [String padding](https://github.com/tc39/proposal-string-pad-start-end) to [stage 4 (ES2017)](https://tc39.github.io/ecma262/2017/#sec-string.prototype.padend)
+  - [`global`](https://github.com/tc39/proposal-global) to [stage 3](https://github.com/rwaldron/tc39-notes/blob/master/es7/2016-09/sept-28.md#revisit-systemglobal--global)
+  - [String trimming](https://github.com/tc39/proposal-string-left-right-trim) to [stage 2](https://github.com/rwaldron/tc39-notes/blob/master/es7/2016-07/jul-27.md#10iic-trimstarttrimend)
+- Updated typed arrays to the modern (ES2016+) arguments validation, 
+[#293](https://github.com/zloirock/core-js/pull/293)
+- Fixed `%TypedArray%.from` Safari bug, [#285](https://github.com/zloirock/core-js/issues/285)
+- Fixed compatibility with old version of Prototype.js, [#278](https://github.com/zloirock/core-js/issues/278), [#289](https://github.com/zloirock/core-js/issues/289)
+- `Function#name` no longer cache the result for correct behaviour with inherited constructors, [#296](https://github.com/zloirock/core-js/issues/296)
+- Added errors on incorrect context of collection methods, [#272](https://github.com/zloirock/core-js/issues/272)
+- Fixed conversion typed array constructors to string, fix [#300](https://github.com/zloirock/core-js/issues/300)
+- Fixed `Set#size` with debugger ReactNative for Android, [#297](https://github.com/zloirock/core-js/issues/297)
+- Fixed an issue with Electron-based debugger, [#230](https://github.com/zloirock/core-js/issues/230)
+- Fixed compatibility with incomplete third-party `WeakMap` polyfills, [#252](https://github.com/zloirock/core-js/pull/252)
+- Added a fallback for `Date#toJSON` in engines without native `Date#toISOString`, [#220](https://github.com/zloirock/core-js/issues/220)
+- Added support for Sphere Dispatch API, [#286](https://github.com/zloirock/core-js/pull/286)
+- Seriously changed the coding style and the [ESLint config](https://github.com/zloirock/core-js/blob/master/.eslintrc.js)
+- Updated many dev dependencies (`webpack`, `uglify`, etc)
+- Some other minor fixes and optimizations
+
+##### 2.4.1 - 2016.07.18
+- Fixed `script` tag for some parsers, [#204](https://github.com/zloirock/core-js/issues/204), [#216](https://github.com/zloirock/core-js/issues/216)
+- Removed some unused variables, [#217](https://github.com/zloirock/core-js/issues/217), [#218](https://github.com/zloirock/core-js/issues/218)
+- Fixed MS Edge `Reflect.construct` and `Reflect.apply` - they should not allow primitive as `argumentsList` argument
+
+##### 1.2.7 [LEGACY] - 2016.07.18
+- Some fixes for issues like [#159](https://github.com/zloirock/core-js/issues/159), [#186](https://github.com/zloirock/core-js/issues/186), [#194](https://github.com/zloirock/core-js/issues/194), [#207](https://github.com/zloirock/core-js/issues/207)
+
+##### 2.4.0 - 2016.05.08
+- Added `Observable`, [stage 1 proposal](https://github.com/zenparsing/es-observable)
+- Fixed behavior `Object.{getOwnPropertySymbols, getOwnPropertyDescriptor}` and `Object#propertyIsEnumerable` on `Object.prototype`
+- `Reflect.construct` and `Reflect.apply` should throw an error if `argumentsList` argument is not an object, [#194](https://github.com/zloirock/core-js/issues/194)
+
+##### 2.3.0 - 2016.04.24
+- Added `asap` for enqueuing microtasks, [stage 0 proposal](https://github.com/rwaldron/tc39-notes/blob/master/es6/2014-09/sept-25.md#510-globalasap-for-enqueuing-a-microtask)
+- Added well-known symbol `Symbol.asyncIterator` for [stage 2 async iteration proposal](https://github.com/tc39/proposal-async-iteration)
+- Added well-known symbol `Symbol.observable` for [stage 1 observables proposal](https://github.com/zenparsing/es-observable)
+- `String#{padStart, padEnd}` returns original string if filler is empty string, [TC39 meeting notes](https://github.com/rwaldron/tc39-notes/blob/master/es7/2016-03/march-29.md#stringprototypepadstartpadend)
+- `Object.values` and `Object.entries` moved to stage 4 from 3, [TC39 meeting notes](https://github.com/rwaldron/tc39-notes/blob/master/es7/2016-03/march-29.md#objectvalues--objectentries)
+- `System.global` moved to stage 2 from 1, [TC39 meeting notes](https://github.com/rwaldron/tc39-notes/blob/master/es7/2016-03/march-29.md#systemglobal)
+- `Map#toJSON` and `Set#toJSON` rejected and will be removed from the next major release, [TC39 meeting notes](https://github.com/rwaldron/tc39-notes/blob/master/es7/2016-03/march-31.md#mapprototypetojsonsetprototypetojson)
+- `Error.isError` withdrawn and will be removed from the next major release, [TC39 meeting notes](https://github.com/rwaldron/tc39-notes/blob/master/es7/2016-03/march-29.md#erroriserror)
+- Added fallback for `Function#name` on non-extensible functions and functions with broken `toString` conversion, [#193](https://github.com/zloirock/core-js/issues/193)
+
+##### 2.2.2 - 2016.04.06
+- Added conversion `-0` to `+0` to `Array#{indexOf, lastIndexOf}`, [ES2016 fix](https://github.com/tc39/ecma262/pull/316)
+- Added fixes for some `Math` methods in Tor Browser
+- `Array.{from, of}` no longer calls prototype setters
+- Added workaround over Chrome DevTools strange behavior, [#186](https://github.com/zloirock/core-js/issues/186)
+
+##### 2.2.1 - 2016.03.19
+- Fixed `Object.getOwnPropertyNames(window)` `2.1+` versions bug, [#181](https://github.com/zloirock/core-js/issues/181)
+
+##### 2.2.0 - 2016.03.15
+- Added `String#matchAll`, [proposal](https://github.com/tc39/String.prototype.matchAll)
+- Added `Object#__(define|lookup)[GS]etter__`, [annex B ES2017](https://github.com/tc39/ecma262/pull/381)
+- Added `@@toPrimitive` methods to `Date` and `Symbol`
+- Fixed `%TypedArray%#slice` in Edge ~ 13 (throws with `@@species` and wrapped / inherited constructor)
+- Some other minor fixes
+
+##### 2.1.5 - 2016.03.12
+- Improved support NodeJS domains in `Promise#then`, [#180](https://github.com/zloirock/core-js/issues/180)
+- Added fallback for `Date#toJSON` bug in Qt Script, [#173](https://github.com/zloirock/core-js/issues/173#issuecomment-193972502)
+
+##### 2.1.4 - 2016.03.08
+- Added fallback for `Symbol` polyfill in Qt Script, [#173](https://github.com/zloirock/core-js/issues/173)
+- Added one more fallback for IE11 `Script Access Denied` error with iframes, [#165](https://github.com/zloirock/core-js/issues/165)
+
+##### 2.1.3 - 2016.02.29
+- Added fallback for [`es6-promise` package bug](https://github.com/stefanpenner/es6-promise/issues/169), [#176](https://github.com/zloirock/core-js/issues/176)
+
+##### 2.1.2 - 2016.02.29
+- Some minor `Promise` fixes:
+  - Browsers `rejectionhandled` event better HTML spec complaint
+  - Errors in unhandled rejection handlers should not cause any problems
+  - Fixed typo in feature detection
+
+##### 2.1.1 - 2016.02.22
+- Some `Promise` improvements:
+  - Feature detection:
+    - **Added detection unhandled rejection tracking support - now it's available everywhere**, [#140](https://github.com/zloirock/core-js/issues/140)
+    - Added detection `@@species` pattern support for completely correct subclassing
+    - Removed usage `Object.setPrototypeOf` from feature detection and noisy console message about it in FF
+  - `Promise.all` fixed for some very specific cases
+
+##### 2.1.0 - 2016.02.09
+- **API**:
+  - ES5 polyfills are split and logic, used in other polyfills, moved to internal modules
+    - **All entry point works in ES3 environment like IE8- without `core-js/(library/)es5`**
+    - **Added all missed single entry points for ES5 polyfills**
+    - Separated ES5 polyfills moved to the ES6 namespace. Why?
+      - Mainly, for prevent duplication features in different namespaces - logic of most required ES5 polyfills changed in ES6+:
+        - Already added changes for: `Object` statics - should accept primitives, new whitespaces lists in `String#trim`, `parse(Int|float)`, `RegExp#toString` logic, `String#split`, etc
+        - Should be changed in the future: `@@species` and `ToLength` logic in `Array` methods, `Date` parsing, `Function#bind`, etc
+        - Should not be changed only several features like `Array.isArray` and `Date.now`
+      - Some ES5 polyfills required for modern engines
+    - All old entry points should work fine, but in the next major release API can be changed
+  - `Object.getOwnPropertyDescriptors` moved to the stage 3, [January TC39 meeting](https://github.com/rwaldron/tc39-notes/blob/master/es7/2016-01/2016-01-28.md#objectgetownpropertydescriptors-to-stage-3-jordan-harband-low-priority-but-super-quick)
+  - Added `umd` option for [custom build process](https://github.com/zloirock/core-js#custom-build-from-external-scripts), [#169](https://github.com/zloirock/core-js/issues/169)
+  - Returned entry points for `Array` statics, removed in `2.0`, for compatibility with `babel` `6` and for future fixes
+- **Deprecated**:
+  - `Reflect.enumerate` deprecated and will be removed from the next major release, [January TC39 meeting](https://github.com/rwaldron/tc39-notes/blob/master/es7/2016-01/2016-01-28.md#5xix-revisit-proxy-enumerate---revisit-decision-to-exhaust-iterator)
+- **New Features**:
+  - Added [`Reflect` metadata API](https://github.com/jonathandturner/decorators/blob/master/specs/metadata.md) as a pre-strawman feature, [#152](https://github.com/zloirock/core-js/issues/152):
+    - `Reflect.defineMetadata`
+    - `Reflect.deleteMetadata`
+    - `Reflect.getMetadata`
+    - `Reflect.getMetadataKeys`
+    - `Reflect.getOwnMetadata`
+    - `Reflect.getOwnMetadataKeys`
+    - `Reflect.hasMetadata`
+    - `Reflect.hasOwnMetadata`
+    - `Reflect.metadata`
+  - Implementation / fixes `Date#toJSON`
+  - Fixes for `parseInt` and `Number.parseInt`
+  - Fixes for `parseFloat` and `Number.parseFloat`
+  - Fixes for `RegExp#toString`
+  - Fixes for `Array#sort`
+  - Fixes for `Number#toFixed`
+  - Fixes for `Number#toPrecision`
+  - Additional fixes for `String#split` (`RegExp#@@split`)
+- **Improvements**:
+  - Correct subclassing wrapped collections, `Number` and `RegExp` constructors with native class syntax
+  - Correct support `SharedArrayBuffer` and buffers from other realms in typed arrays wrappers 
+  - Additional validations for `Object.{defineProperty, getOwnPropertyDescriptor}` and `Reflect.defineProperty`
+- **Bug Fixes**:
+  - Fixed some cases `Array#lastIndexOf` with negative second argument
+
+##### 2.0.3 - 2016.01.11
+- Added fallback for V8 ~ Chrome 49 `Promise` subclassing bug causes unhandled rejection on feature detection, [#159](https://github.com/zloirock/core-js/issues/159)
+- Added fix for very specific environments with global `window === null`
+
+##### 2.0.2 - 2016.01.04
+- Temporarily removed `length` validation from `Uint8Array` constructor wrapper. Reason - [bug in `ws` module](https://github.com/websockets/ws/pull/645) (-> `socket.io`) which passes to `Buffer` constructor -> `Uint8Array` float and uses [the `V8` bug](https://code.google.com/p/v8/issues/detail?id=4552) for conversion to int (by the spec should be thrown an error). [It creates problems for many people.](https://github.com/karma-runner/karma/issues/1768) I hope, it will be returned after fixing this bug in `V8`.
+
+##### 2.0.1 - 2015.12.31
+- Forced usage `Promise.resolve` polyfill in the `library` version for correct work with wrapper
+- `Object.assign` should be defined in the strict mode -> throw an error on extension non-extensible objects, [#154](https://github.com/zloirock/core-js/issues/154)
+
+##### 2.0.0 - 2015.12.24
+- Added implementations and fixes [Typed Arrays](https://github.com/zloirock/core-js#ecmascript-6-typed-arrays)-related features
+  - `ArrayBuffer`, `ArrayBuffer.isView`, `ArrayBuffer#slice`
+  - `DataView` with all getter / setter methods
+  - `Int8Array`, `Uint8Array`, `Uint8ClampedArray`, `Int16Array`, `Uint16Array`, `Int32Array`, `Uint32Array`, `Float32Array` and `Float64Array` constructors
+  - `%TypedArray%.{for, of}`, `%TypedArray%#{copyWithin, every, fill, filter, find, findIndex, forEach, indexOf, includes, join, lastIndexOf, map, reduce, reduceRight, reverse, set, slice, some, sort, subarray, values, keys, entries, @@iterator, ...}`
+- Added [`System.global`](https://github.com/zloirock/core-js#ecmascript-7-proposals), [proposal](https://github.com/tc39/proposal-global), [November TC39 meeting](https://github.com/rwaldron/tc39-notes/tree/master/es7/2015-11/nov-19.md#systemglobal-jhd)
+- Added [`Error.isError`](https://github.com/zloirock/core-js#ecmascript-7-proposals), [proposal](https://github.com/ljharb/proposal-is-error), [November TC39 meeting](https://github.com/rwaldron/tc39-notes/tree/master/es7/2015-11/nov-19.md#jhd-erroriserror)
+- Added [`Math.{iaddh, isubh, imulh, umulh}`](https://github.com/zloirock/core-js#ecmascript-7-proposals), [proposal](https://gist.github.com/BrendanEich/4294d5c212a6d2254703)
+- `RegExp.escape` moved from the `es7` to the non-standard `core` namespace, [July TC39 meeting](https://github.com/rwaldron/tc39-notes/blob/master/es7/2015-07/july-28.md#62-regexpescape) - too slow, but it's condition of stability, [#116](https://github.com/zloirock/core-js/issues/116)
+- [`Promise`](https://github.com/zloirock/core-js#ecmascript-6-promise)
+  - Some performance optimisations
+  - Added basic support [`rejectionHandled` event / `onrejectionhandled` handler](https://github.com/zloirock/core-js#unhandled-rejection-tracking) to the polyfill
+  - Removed usage `@@species` from `Promise.{all, race}`, [November TC39 meeting](https://github.com/rwaldron/tc39-notes/tree/master/es7/2015-11/nov-18.md#conclusionresolution-2)
+- Some improvements [collections polyfills](https://github.com/zloirock/core-js#ecmascript-6-collections)
+  - `O(1)` and preventing possible leaks with frozen keys, [#134](https://github.com/zloirock/core-js/issues/134)
+  - Correct observable state object keys
+- Renamed `String#{padLeft, padRight}` -> [`String#{padStart, padEnd}`](https://github.com/zloirock/core-js#ecmascript-7-proposals), [proposal](https://github.com/tc39/proposal-string-pad-start-end), [November TC39 meeting](https://github.com/rwaldron/tc39-notes/tree/master/es7/2015-11/nov-17.md#conclusionresolution-2) (they want to rename it on each meeting?O_o), [#132](https://github.com/zloirock/core-js/issues/132)
+- Added [`String#{trimStart, trimEnd}` as aliases for `String#{trimLeft, trimRight}`](https://github.com/zloirock/core-js#ecmascript-7-proposals), [proposal](https://github.com/sebmarkbage/ecmascript-string-left-right-trim), [November TC39 meeting](https://github.com/rwaldron/tc39-notes/tree/master/es7/2015-11/nov-17.md#conclusionresolution-2)
+- Added [annex B HTML methods](https://github.com/zloirock/core-js#ecmascript-6-string) - ugly, but also [the part of the spec](http://www.ecma-international.org/ecma-262/6.0/#sec-string.prototype.anchor)
+- Added little fix for [`Date#toString`](https://github.com/zloirock/core-js#ecmascript-6-date) - `new Date(NaN).toString()` [should be `'Invalid Date'`](http://www.ecma-international.org/ecma-262/6.0/#sec-todatestring)
+- Added [`{keys, values, entries, @@iterator}` methods to DOM collections](https://github.com/zloirock/core-js#iterable-dom-collections) which should have [iterable interface](https://heycam.github.io/webidl/#idl-iterable) or should be [inherited from `Array`](https://heycam.github.io/webidl/#LegacyArrayClass) - `NodeList`, `DOMTokenList`, `MediaList`, `StyleSheetList`, `CSSRuleList`.
+- Removed Mozilla `Array` generics - [deprecated and will be removed from FF](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array#Array_generic_methods), [looks like strawman is dead](http://wiki.ecmascript.org/doku.php?id=strawman:array_statics), available [alternative shim](https://github.com/plusdude/array-generics)
+- Removed `core.log` module
+- CommonJS API
+  - Added entry points for [virtual methods](https://github.com/zloirock/core-js#commonjs-and-prototype-methods-without-global-namespace-pollution)
+  - Added entry points for [stages proposals](https://github.com/zloirock/core-js#ecmascript-7-proposals)
+  - Some other minor changes
+- [Custom build from external scripts](https://github.com/zloirock/core-js#custom-build-from-external-scripts) moved to the separate package for preventing problems with dependencies
+- Changed `$` prefix for internal modules file names because Team Foundation Server does not support it, [#129](https://github.com/zloirock/core-js/issues/129)
+- Additional fix for `SameValueZero` in V8 ~ Chromium 39-42 collections
+- Additional fix for FF27 `Array` iterator
+- Removed usage shortcuts for `arguments` object - old WebKit bug, [#150](https://github.com/zloirock/core-js/issues/150)
+- `{Map, Set}#forEach` non-generic, [#144](https://github.com/zloirock/core-js/issues/144)
+- Many other improvements
+
+##### 1.2.6 - 2015.11.09
+* Reject with `TypeError` on attempt resolve promise itself
+* Correct behavior with broken `Promise` subclass constructors / methods
+* Added `Promise`-based fallback for microtask
+* Fixed V8 and FF `Array#{values, @@iterator}.name`
+* Fixed IE7- `[1, 2].join(undefined) -> '1,2'`
+* Some other fixes / improvements / optimizations
+
+##### 1.2.5 - 2015.11.02
+* Some more `Number` constructor fixes:
+  * Fixed V8 ~ Node 0.8 bug: `Number('+0x1')` should be `NaN`
+  * Fixed `Number(' 0b1\n')` case, should be `1`
+  * Fixed `Number()` case, should be `0`
+
+##### 1.2.4 - 2015.11.01
+* Fixed `Number('0b12') -> NaN` case in the shim
+* Fixed V8 ~ Chromium 40- bug - `Weak(Map|Set)#{delete, get, has}` should not throw errors [#124](https://github.com/zloirock/core-js/issues/124)
+* Some other fixes and optimizations
+
+##### 1.2.3 - 2015.10.23
+* Fixed some problems related old V8 bug `Object('a').propertyIsEnumerable(0) // => false`, for example, `Object.assign({}, 'qwe')` from the last release
+* Fixed `.name` property and `Function#toString` conversion some polyfilled methods
+* Fixed `Math.imul` arity in Safari 8-
+
+##### 1.2.2 - 2015.10.18
+* Improved optimisations for V8
+* Fixed build process from external packages, [#120](https://github.com/zloirock/core-js/pull/120)
+* One more `Object.{assign, values, entries}` fix for [**very** specific case](https://github.com/ljharb/proposal-object-values-entries/issues/5)
+
+##### 1.2.1 - 2015.10.02
+* Replaced fix `JSON.stringify` + `Symbol` behavior from `.toJSON` method to wrapping `JSON.stringify` - little more correct, [compat-table/642](https://github.com/kangax/compat-table/pull/642)
+* Fixed typo which broke tasks scheduler in WebWorkers in old FF, [#114](https://github.com/zloirock/core-js/pull/114)
+
+##### 1.2.0 - 2015.09.27
+* Added browser [`Promise` rejection hook](#unhandled-rejection-tracking), [#106](https://github.com/zloirock/core-js/issues/106)
+* Added correct [`IsRegExp`](http://www.ecma-international.org/ecma-262/6.0/#sec-isregexp) logic to [`String#{includes, startsWith, endsWith}`](https://github.com/zloirock/core-js/#ecmascript-6-string) and [`RegExp` constructor](https://github.com/zloirock/core-js/#ecmascript-6-regexp), `@@match` case, [example](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/match#Disabling_the_isRegExp_check)
+* Updated [`String#leftPad`](https://github.com/zloirock/core-js/#ecmascript-7-proposals) [with proposal](https://github.com/ljharb/proposal-string-pad-left-right/issues/6): string filler truncated from the right side
+* Replaced V8 [`Object.assign`](https://github.com/zloirock/core-js/#ecmascript-6-object) - its properties order not only [incorrect](https://github.com/sindresorhus/object-assign/issues/22), it is non-deterministic and it causes some problems
+* Fixed behavior with deleted in getters properties for `Object.{`[`assign`](https://github.com/zloirock/core-js/#ecmascript-6-object)`, `[`entries, values`](https://github.com/zloirock/core-js/#ecmascript-7-proposals)`}`, [example](http://goo.gl/iQE01c)
+* Fixed [`Math.sinh`](https://github.com/zloirock/core-js/#ecmascript-6-math) with very small numbers in V8 near Chromium 38
+* Some other fixes and optimizations
+
+##### 1.1.4 - 2015.09.05
+* Fixed support symbols in FF34-35 [`Object.assign`](https://github.com/zloirock/core-js/#ecmascript-6-object)
+* Fixed [collections iterators](https://github.com/zloirock/core-js/#ecmascript-6-iterators) in FF25-26
+* Fixed non-generic WebKit [`Array.of`](https://github.com/zloirock/core-js/#ecmascript-6-array)
+* Some other fixes and optimizations
+
+##### 1.1.3 - 2015.08.29
+* Fixed support Node.js domains in [`Promise`](https://github.com/zloirock/core-js/#ecmascript-6-promise), [#103](https://github.com/zloirock/core-js/issues/103)
+
+##### 1.1.2 - 2015.08.28
+* Added `toJSON` method to [`Symbol`](https://github.com/zloirock/core-js/#ecmascript-6-symbol) polyfill and to MS Edge implementation for expected `JSON.stringify` result w/o patching this method
+* Replaced [`Reflect.construct`](https://github.com/zloirock/core-js/#ecmascript-6-reflect) implementations w/o correct support third argument
+* Fixed `global` detection with changed `document.domain` in ~IE8, [#100](https://github.com/zloirock/core-js/issues/100)
+
+##### 1.1.1 - 2015.08.20
+* Added more correct microtask implementation for [`Promise`](#ecmascript-6-promise)
+
+##### 1.1.0 - 2015.08.17
+* Updated [string padding](https://github.com/zloirock/core-js/#ecmascript-7-proposals) to [actual proposal](https://github.com/ljharb/proposal-string-pad-left-right) - renamed, minor internal changes:
+  * `String#lpad` -> `String#padLeft`
+  * `String#rpad` -> `String#padRight`
+* Added [string trim functions](#ecmascript-7-proposals) - [proposal](https://github.com/sebmarkbage/ecmascript-string-left-right-trim), defacto standard - required only for IE11- and fixed for some old engines:
+  * `String#trimLeft`
+  * `String#trimRight`
+* [`String#trim`](https://github.com/zloirock/core-js/#ecmascript-6-string) fixed for some engines by es6 spec and moved from `es5` to single `es6` module
+* Splitted [`es6.object.statics-accept-primitives`](https://github.com/zloirock/core-js/#ecmascript-6-object)
+* Caps for `freeze`-family `Object` methods moved from `es5` to `es6` namespace and joined with [es6 wrappers](https://github.com/zloirock/core-js/#ecmascript-6-object)
+* `es5` [namespace](https://github.com/zloirock/core-js/#commonjs) also includes modules, moved to `es6` namespace - you can use it as before
+* Increased `MessageChannel` priority in `$.task`, [#95](https://github.com/zloirock/core-js/issues/95)
+* Does not get `global.Symbol` on each getting iterator, if you wanna use alternative `Symbol` shim - add it before `core-js`
+* [`Reflect.construct`](https://github.com/zloirock/core-js/#ecmascript-6-reflect) optimized and fixed for some cases
+* Simplified [`Reflect.enumerate`](https://github.com/zloirock/core-js/#ecmascript-6-reflect), see [this question](https://esdiscuss.org/topic/question-about-enumerate-and-property-decision-timing)
+* Some corrections in [`Math.acosh`](https://github.com/zloirock/core-js/#ecmascript-6-math)
+* Fixed [`Math.imul`](https://github.com/zloirock/core-js/#ecmascript-6-math) for old WebKit
+* Some fixes in string / RegExp [well-known symbols](https://github.com/zloirock/core-js/#ecmascript-6-regexp) logic
+* Some other fixes and optimizations
+
+##### 1.0.1 - 2015.07.31
+* Some fixes for final MS Edge, replaced broken native `Reflect.defineProperty`
+* Some minor fixes and optimizations
+* Changed compression `client/*.min.js` options for safe `Function#name` and `Function#length`, should be fixed [#92](https://github.com/zloirock/core-js/issues/92)
+
+##### 1.0.0 - 2015.07.22
+* Added logic for [well-known symbols](https://github.com/zloirock/core-js/#ecmascript-6-regexp):
+  * `Symbol.match`
+  * `Symbol.replace`
+  * `Symbol.split`
+  * `Symbol.search`
+* Actualized and optimized work with iterables:
+  * Optimized  [`Map`, `Set`, `WeakMap`, `WeakSet` constructors](https://github.com/zloirock/core-js/#ecmascript-6-collections), [`Promise.all`, `Promise.race`](https://github.com/zloirock/core-js/#ecmascript-6-promise) for default `Array Iterator`
+  * Optimized  [`Array.from`](https://github.com/zloirock/core-js/#ecmascript-6-array) for default `Array Iterator`
+  * Added [`core.getIteratorMethod`](https://github.com/zloirock/core-js/#ecmascript-6-iterators) helper
+* Uses enumerable properties in shimmed instances - collections, iterators, etc for optimize performance
+* Added support native constructors to [`Reflect.construct`](https://github.com/zloirock/core-js/#ecmascript-6-reflect) with 2 arguments
+* Added support native constructors to [`Function#bind`](https://github.com/zloirock/core-js/#ecmascript-5) shim with `new`
+* Removed obsolete `.clear` methods native [`Weak`-collections](https://github.com/zloirock/core-js/#ecmascript-6-collections)
+* Maximum modularity, reduced minimal custom build size, separated into submodules:
+  * [`es6.reflect`](https://github.com/zloirock/core-js/#ecmascript-6-reflect)
+  * [`es6.regexp`](https://github.com/zloirock/core-js/#ecmascript-6-regexp)
+  * [`es6.math`](https://github.com/zloirock/core-js/#ecmascript-6-math)
+  * [`es6.number`](https://github.com/zloirock/core-js/#ecmascript-6-number)
+  * [`es7.object.to-array`](https://github.com/zloirock/core-js/#ecmascript-7-proposals)
+  * [`core.object`](https://github.com/zloirock/core-js/#object)
+  * [`core.string`](https://github.com/zloirock/core-js/#escaping-strings)
+  * [`core.iter-helpers`](https://github.com/zloirock/core-js/#ecmascript-6-iterators)
+  * Internal modules (`$`, `$.iter`, etc)
+* Many other optimizations
+* Final cleaning non-standard features
+  * Moved `$for` to [separate library](https://github.com/zloirock/forof). This work for syntax - `for-of` loop and comprehensions
+  * Moved `Date#{format, formatUTC}` to [separate library](https://github.com/zloirock/dtf). Standard way for this - `ECMA-402`
+  * Removed `Math` methods from `Number.prototype`. Slight sugar for simple `Math` methods calling
+  * Removed `{Array#, Array, Dict}.turn`
+  * Removed `core.global`
+* Uses `ToNumber` instead of `ToLength` in [`Number Iterator`](https://github.com/zloirock/core-js/#number-iterator), `Array.from(2.5)` will be `[0, 1, 2]` instead of `[0, 1]`
+* Fixed [#85](https://github.com/zloirock/core-js/issues/85) - invalid `Promise` unhandled rejection message in nested `setTimeout`
+* Fixed [#86](https://github.com/zloirock/core-js/issues/86) - support FF extensions
+* Fixed [#89](https://github.com/zloirock/core-js/issues/89) - behavior `Number` constructor in strange case
+
+##### 0.9.18 - 2015.06.17
+* Removed `/` from [`RegExp.escape`](https://github.com/zloirock/core-js/#ecmascript-7-proposals) escaped characters
+
+##### 0.9.17 - 2015.06.14
+* Updated [`RegExp.escape`](https://github.com/zloirock/core-js/#ecmascript-7-proposals) to the [latest proposal](https://github.com/benjamingr/RexExp.escape)
+* Fixed conflict with webpack dev server + IE buggy behavior
+
+##### 0.9.16 - 2015.06.11
+* More correct order resolving thenable in [`Promise`](https://github.com/zloirock/core-js/#ecmascript-6-promise) polyfill
+* Uses polyfill instead of [buggy V8 `Promise`](https://github.com/zloirock/core-js/issues/78)
+
+##### 0.9.15 - 2015.06.09
+* [Collections](https://github.com/zloirock/core-js/#ecmascript-6-collections) from `library` version return wrapped native instances
+* Fixed collections prototype methods in `library` version
+* Optimized [`Math.hypot`](https://github.com/zloirock/core-js/#ecmascript-6-math)
+
+##### 0.9.14 - 2015.06.04
+* Updated [`Promise.resolve` behavior](https://esdiscuss.org/topic/fixing-promise-resolve)
+* Added fallback for IE11 buggy `Object.getOwnPropertyNames` + iframe
+* Some other fixes
+
+##### 0.9.13 - 2015.05.25
+* Added fallback for [`Symbol` polyfill](https://github.com/zloirock/core-js/#ecmascript-6-symbol) for old Android
+* Some other fixes
+
+##### 0.9.12 - 2015.05.24
+* Different instances `core-js` should use / recognize the same symbols
+* Some fixes
+
+##### 0.9.11 - 2015.05.18
+* Simplified [custom build](https://github.com/zloirock/core-js/#custom-build)
+  * Added custom build js api
+  * Added `grunt-cli` to `devDependencies` for `npm run grunt`
+* Some fixes
+
+##### 0.9.10 - 2015.05.16
+* Wrapped `Function#toString` for correct work wrapped methods / constructors with methods similar to the [`lodash` `isNative`](https://github.com/lodash/lodash/issues/1197)
+* Added proto versions of methods to export object in `default` version for consistency with `library` version
+
+##### 0.9.9 - 2015.05.14
+* Wrapped `Object#propertyIsEnumerable` for [`Symbol` polyfill](https://github.com/zloirock/core-js/#ecmascript-6-symbol)
+* [Added proto versions of methods to `library` for ES7 bind syntax](https://github.com/zloirock/core-js/issues/65)
+* Some other fixes
+
+##### 0.9.8 - 2015.05.12
+* Fixed [`Math.hypot`](https://github.com/zloirock/core-js/#ecmascript-6-math) with negative arguments
+* Added `Object#toString.toString` as fallback for [`lodash` `isNative`](https://github.com/lodash/lodash/issues/1197)
+
+##### 0.9.7 - 2015.05.07
+* Added [support DOM collections](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice#Streamlining_cross-browser_behavior) to IE8- `Array#slice`
+
+##### 0.9.6 - 2015.05.01
+* Added [`String#lpad`, `String#rpad`](https://github.com/zloirock/core-js/#ecmascript-7-proposals)
+
+##### 0.9.5 - 2015.04.30
+* Added cap for `Function#@@hasInstance`
+* Some fixes and optimizations
+
+##### 0.9.4 - 2015.04.27
+* Fixed `RegExp` constructor
+
+##### 0.9.3 - 2015.04.26
+* Some fixes and optimizations
+
+##### 0.9.2 - 2015.04.25
+* More correct [`Promise`](https://github.com/zloirock/core-js/#ecmascript-6-promise) unhandled rejection tracking and resolving / rejection priority
+
+##### 0.9.1 - 2015.04.25
+* Fixed `__proto__`-based [`Promise`](https://github.com/zloirock/core-js/#ecmascript-6-promise) subclassing in some environments
+
+##### 0.9.0 - 2015.04.24
+* Added correct [symbols](https://github.com/zloirock/core-js/#ecmascript-6-symbol) descriptors
+  * Fixed behavior `Object.{assign, create, defineProperty, defineProperties, getOwnPropertyDescriptor, getOwnPropertyDescriptors}` with symbols
+  * Added [single entry points](https://github.com/zloirock/core-js/#commonjs) for `Object.{create, defineProperty, defineProperties}`
+* Added [`Map#toJSON`](https://github.com/zloirock/core-js/#ecmascript-7-proposals)
+* Removed non-standard methods `Object#[_]` and `Function#only` - they solves syntax problems, but now in compilers available arrows and ~~in near future will be available~~ [available](http://babeljs.io/blog/2015/05/14/function-bind/) [bind syntax](https://github.com/zenparsing/es-function-bind)
+* Removed non-standard undocumented methods `Symbol.{pure, set}`
+* Some fixes and internal changes
+
+##### 0.8.4 - 2015.04.18
+* Uses `webpack` instead of `browserify` for browser builds - more compression-friendly result
+
+##### 0.8.3 - 2015.04.14
+* Fixed `Array` statics with single entry points
+
+##### 0.8.2 - 2015.04.13
+* [`Math.fround`](https://github.com/zloirock/core-js/#ecmascript-6-math) now also works in IE9-
+* Added [`Set#toJSON`](https://github.com/zloirock/core-js/#ecmascript-7-proposals)
+* Some optimizations and fixes
+
+##### 0.8.1 - 2015.04.03
+* Fixed `Symbol.keyFor`
+
+##### 0.8.0 - 2015.04.02
+* Changed [CommonJS API](https://github.com/zloirock/core-js/#commonjs)
+* Splitted and renamed some modules
+* Added support ES3 environment (ES5 polyfill) to **all** default versions - size increases slightly (+ ~4kb w/o gzip), many issues disappear, if you don't need it - [simply include only required namespaces / features / modules](https://github.com/zloirock/core-js/#commonjs)
+* Removed [abstract references](https://github.com/zenparsing/es-abstract-refs) support - proposal has been superseded =\
+* [`$for.isIterable` -> `core.isIterable`, `$for.getIterator` -> `core.getIterator`](https://github.com/zloirock/core-js/#ecmascript-6-iterators), temporary available in old namespace
+* Fixed iterators support in v8 `Promise.all` and `Promise.race`
+* Many other fixes
+
+##### 0.7.2 - 2015.03.09
+* Some fixes
+
+##### 0.7.1 - 2015.03.07
+* Some fixes
+
+##### 0.7.0 - 2015.03.06
+* Rewritten and splitted into [CommonJS modules](https://github.com/zloirock/core-js/#commonjs)
+
+##### 0.6.1 - 2015.02.24
+* Fixed support [`Object.defineProperty`](https://github.com/zloirock/core-js/#ecmascript-5) with accessors on DOM elements on IE8
+
+##### 0.6.0 - 2015.02.23
+* Added support safe closing iteration - calling `iterator.return` on abort iteration, if it exists
+* Added basic support [`Promise`](https://github.com/zloirock/core-js/#ecmascript-6-promise) unhandled rejection tracking in shim
+* Added [`Object.getOwnPropertyDescriptors`](https://github.com/zloirock/core-js/#ecmascript-7-proposals)
+* Removed `console` cap - creates too many problems
+* Restructuring [namespaces](https://github.com/zloirock/core-js/#custom-build)
+* Some fixes
+
+##### 0.5.4 - 2015.02.15
+* Some fixes
+
+##### 0.5.3 - 2015.02.14
+* Added [support binary and octal literals](https://github.com/zloirock/core-js/#ecmascript-6-number) to `Number` constructor
+* Added [`Date#toISOString`](https://github.com/zloirock/core-js/#ecmascript-5)
+
+##### 0.5.2 - 2015.02.10
+* Some fixes
+
+##### 0.5.1 - 2015.02.09
+* Some fixes
+
+##### 0.5.0 - 2015.02.08
+* Systematization of modules
+* Splitted [`es6` module](https://github.com/zloirock/core-js/#ecmascript-6)
+* Splitted `console` module: `web.console` - only cap for missing methods, `core.log` - bound methods & additional features
+* Added [`delay` method](https://github.com/zloirock/core-js/#delay)
+* Some fixes
+
+##### 0.4.10 - 2015.01.28
+* [`Object.getOwnPropertySymbols`](https://github.com/zloirock/core-js/#ecmascript-6-symbol) polyfill returns array of wrapped keys
+
+##### 0.4.9 - 2015.01.27
+* FF20-24 fix
+
+##### 0.4.8 - 2015.01.25
+* Some [collections](https://github.com/zloirock/core-js/#ecmascript-6-collections) fixes
+
+##### 0.4.7 - 2015.01.25
+* Added support frozen objects as [collections](https://github.com/zloirock/core-js/#ecmascript-6-collections) keys
+
+##### 0.4.6 - 2015.01.21
+* Added [`Object.getOwnPropertySymbols`](https://github.com/zloirock/core-js/#ecmascript-6-symbol)
+* Added [`NodeList.prototype[@@iterator]`](https://github.com/zloirock/core-js/#ecmascript-6-iterators)
+* Added basic `@@species` logic - getter in native constructors
+* Removed `Function#by`
+* Some fixes
+
+##### 0.4.5 - 2015.01.16
+* Some fixes
+
+##### 0.4.4 - 2015.01.11
+* Enabled CSP support
+
+##### 0.4.3 - 2015.01.10
+* Added `Function` instances `name` property for IE9+
+
+##### 0.4.2 - 2015.01.10
+* `Object` static methods accept primitives
+* `RegExp` constructor can alter flags (IE9+)
+* Added `Array.prototype[Symbol.unscopables]`
+
+##### 0.4.1 - 2015.01.05
+* Some fixes
+
+##### 0.4.0 - 2015.01.03
+* Added [`es6.reflect`](https://github.com/zloirock/core-js/#ecmascript-6-reflect) module:
+  * Added `Reflect.apply`
+  * Added `Reflect.construct`
+  * Added `Reflect.defineProperty`
+  * Added `Reflect.deleteProperty`
+  * Added `Reflect.enumerate`
+  * Added `Reflect.get`
+  * Added `Reflect.getOwnPropertyDescriptor`
+  * Added `Reflect.getPrototypeOf`
+  * Added `Reflect.has`
+  * Added `Reflect.isExtensible`
+  * Added `Reflect.preventExtensions`
+  * Added `Reflect.set`
+  * Added `Reflect.setPrototypeOf`
+* `core-js` methods now can use external `Symbol.iterator` polyfill
+* Some fixes
+
+##### 0.3.3 - 2014.12.28
+* [Console cap](https://github.com/zloirock/core-js/#console) excluded from node.js default builds
+
+##### 0.3.2 - 2014.12.25
+* Added cap for [ES5](https://github.com/zloirock/core-js/#ecmascript-5) freeze-family methods
+* Fixed `console` bug
+
+##### 0.3.1 - 2014.12.23
+* Some fixes
+
+##### 0.3.0 - 2014.12.23
+* Optimize [`Map` & `Set`](https://github.com/zloirock/core-js/#ecmascript-6-collections):
+  * Use entries chain on hash table
+  * Fast & correct iteration
+  * Iterators moved to [`es6`](https://github.com/zloirock/core-js/#ecmascript-6) and [`es6.collections`](https://github.com/zloirock/core-js/#ecmascript-6-collections) modules
+
+##### 0.2.5 - 2014.12.20
+* `console` no longer shortcut for `console.log` (compatibility problems)
+* Some fixes
+
+##### 0.2.4 - 2014.12.17
+* Better compliance of ES6
+* Added [`Math.fround`](https://github.com/zloirock/core-js/#ecmascript-6-math) (IE10+)
+* Some fixes
+
+##### 0.2.3 - 2014.12.15
+* [Symbols](https://github.com/zloirock/core-js/#ecmascript-6-symbol):
+  * Added option to disable addition setter to `Object.prototype` for Symbol polyfill:
+    * Added `Symbol.useSimple`
+    * Added `Symbol.useSetter`
+  * Added cap for well-known Symbols:
+    * Added `Symbol.hasInstance`
+    * Added `Symbol.isConcatSpreadable`
+    * Added `Symbol.match`
+    * Added `Symbol.replace`
+    * Added `Symbol.search`
+    * Added `Symbol.species`
+    * Added `Symbol.split`
+    * Added `Symbol.toPrimitive`
+    * Added `Symbol.unscopables`
+
+##### 0.2.2 - 2014.12.13
+* Added [`RegExp#flags`](https://github.com/zloirock/core-js/#ecmascript-6-regexp) ([December 2014 Draft Rev 29](http://wiki.ecmascript.org/doku.php?id=harmony:specification_drafts#december_6_2014_draft_rev_29))
+* Added [`String.raw`](https://github.com/zloirock/core-js/#ecmascript-6-string)
+
+##### 0.2.1 - 2014.12.12
+* Repair converting -0 to +0 in [native collections](https://github.com/zloirock/core-js/#ecmascript-6-collections)
+
+##### 0.2.0 - 2014.12.06
+* Added [`es7.proposals`](https://github.com/zloirock/core-js/#ecmascript-7-proposals) and [`es7.abstract-refs`](https://github.com/zenparsing/es-abstract-refs) modules
+* Added [`String#at`](https://github.com/zloirock/core-js/#ecmascript-7-proposals)
+* Added real [`String Iterator`](https://github.com/zloirock/core-js/#ecmascript-6-iterators), older versions used Array Iterator
+* Added abstract references support:
+  * Added `Symbol.referenceGet`
+  * Added `Symbol.referenceSet`
+  * Added `Symbol.referenceDelete`
+  * Added `Function#@@referenceGet`
+  * Added `Map#@@referenceGet`
+  * Added `Map#@@referenceSet`
+  * Added `Map#@@referenceDelete`
+  * Added `WeakMap#@@referenceGet`
+  * Added `WeakMap#@@referenceSet`
+  * Added `WeakMap#@@referenceDelete`
+  * Added `Dict.{...methods}[@@referenceGet]`
+* Removed deprecated `.contains` methods
+* Some fixes
+
+##### 0.1.5 - 2014.12.01
+* Added [`Array#copyWithin`](https://github.com/zloirock/core-js/#ecmascript-6-array)
+* Added [`String#codePointAt`](https://github.com/zloirock/core-js/#ecmascript-6-string)
+* Added [`String.fromCodePoint`](https://github.com/zloirock/core-js/#ecmascript-6-string)
+
+##### 0.1.4 - 2014.11.27
+* Added [`Dict.mapPairs`](https://github.com/zloirock/core-js/#dict)
+
+##### 0.1.3 - 2014.11.20
+* [TC39 November meeting](https://github.com/rwaldron/tc39-notes/tree/master/es6/2014-11):
+  * [`.contains` -> `.includes`](https://github.com/rwaldron/tc39-notes/blob/master/es6/2014-11/nov-18.md#51--44-arrayprototypecontains-and-stringprototypecontains)
+    * `String#contains` -> [`String#includes`](https://github.com/zloirock/core-js/#ecmascript-6-string)
+    * `Array#contains` -> [`Array#includes`](https://github.com/zloirock/core-js/#ecmascript-7-proposals)
+    * `Dict.contains` -> [`Dict.includes`](https://github.com/zloirock/core-js/#dict)
+  * [Removed `WeakMap#clear`](https://github.com/rwaldron/tc39-notes/blob/master/es6/2014-11/nov-19.md#412-should-weakmapweakset-have-a-clear-method-markm)
+  * [Removed `WeakSet#clear`](https://github.com/rwaldron/tc39-notes/blob/master/es6/2014-11/nov-19.md#412-should-weakmapweakset-have-a-clear-method-markm)
+
+##### 0.1.2 - 2014.11.19
+* `Map` & `Set` bug fix
+
+##### 0.1.1 - 2014.11.18
+* Public release
